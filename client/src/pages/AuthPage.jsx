@@ -15,7 +15,7 @@ function AuthPage({ onLoginSuccess }) {
 
     const endpoint = isRegister ? '/api/register' : '/api/login';
 
-    // Формуємо корисне навантаження залежно від режиму
+   
     const payload = isRegister
       ? {
           name: formData.name,

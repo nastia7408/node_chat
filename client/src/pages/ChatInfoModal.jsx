@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import './ChatInfoModal.scss';
+import { useCallback, useEffect, useState } from "react";
+import "./ChatInfoModal.scss";
 
 function ChatInfoModal({
   onClose,
@@ -9,38 +9,31 @@ function ChatInfoModal({
   currentUserId,
 }) {
   const [members, setMembers] = useState([]);
-  const [newName, setNewName] = useState(chat.name || '');
-  const [newMemberPhone, setNewMemberPhone] = useState('');
+  const [newName, setNewName] = useState(chat.name || "");
+  const [newMemberPhone, setNewMemberPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isEditChatName, setIsEditChatName] = useState(false);
-  const [prevvChatId, setPrevvChatId] = useState(chat.id);
+  const [prevChatId, setPrevChatId] = useState(chat.id);
 
-  useEffect(() => {
-    if (chat.id !== prevvChatId) {
-      setPrevvChatId(chat.id);
-      setNewName(chat.name || '');
-    }
-  }, [chat.id, chat.name, prevvChatId, setNewName]);
+  if (chat.id !== prevChatId) {
+    setPrevChatId(chat.id);
+    setNewName(chat.name || "");
+    setIsEditChatName(false);
+  }
 
   const fetchMembers = useCallback(async () => {
-    if (!chat.id) {
-      return;
-    }
+    if (!chat?.id) return;
 
     setIsLoading(true);
-
     try {
       const res = await fetch(
-        `http://localhost:5000/api/chats/${chat.id}/members`,
+        `http://localhost:5000/api/chats/${chat.id}/members`
       );
-
       if (res.ok) {
         const data = await res.json();
-
         setMembers(data);
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(err.message);
     } finally {
       setIsLoading(false);
@@ -54,8 +47,8 @@ function ChatInfoModal({
   const handleUpdateName = async () => {
     try {
       const res = await fetch(`http://localhost:5000/api/chats/${chat.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName }),
       });
 
@@ -63,16 +56,14 @@ function ChatInfoModal({
         onChatUpdated(chat.id, newName);
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(err.message);
     }
   };
 
   const handleDeleteChat = async () => {
-    // eslint-disable-next-line no-alert
-    if (window.confirm('Delete this chat for everyone?')) {
+    if (window.confirm("Delete this chat for everyone?")) {
       const res = await fetch(`http://localhost:5000/api/chats/${chat.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (res.ok) {
@@ -90,18 +81,17 @@ function ChatInfoModal({
       const res = await fetch(
         `http://localhost:5000/api/chats/${chat.id}/members`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phone: newMemberPhone }),
-        },
+        }
       );
 
       if (res.ok) {
-        setNewMemberPhone('');
+        setNewMemberPhone("");
         fetchMembers();
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(err.message);
     }
   };
@@ -111,15 +101,14 @@ function ChatInfoModal({
       const res = await fetch(
         `http://localhost:5000/api/chats/${chat.id}/members/${userId}`,
         {
-          method: 'DELETE',
-        },
+          method: "DELETE",
+        }
       );
 
       if (res.ok) {
         await fetchMembers();
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(err.message);
     }
   };
@@ -131,7 +120,7 @@ function ChatInfoModal({
       tabIndex="0"
       onClick={onClose}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') onClose();
+        if (e.key === "Enter") onClose();
       }}
     >
       <div
@@ -159,14 +148,14 @@ function ChatInfoModal({
                 setIsEditChatName(true);
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') setIsEditChatName(true);
+                if (e.key === "Enter") setIsEditChatName(true);
               }}
             >
               Chat name: {!isEditChatName && (chat.name || chat.recipient_name)}
             </div>
             {isEditChatName && (
               <div className="input-block">
-                {' '}
+                {" "}
                 <input
                   className="item-input"
                   value={newName}

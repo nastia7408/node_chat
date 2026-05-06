@@ -1,13 +1,13 @@
-import { useEffect, useState, useRef } from 'react';
-import '../App.scss';
-import { io } from 'socket.io-client';
-import LogoutIcon from '@mui/icons-material/Logout';
-import CreateChatModal from './CreateChatModal';
-import UserInfoModal from './UserInfoModal';
-import ChatInfoModal from './ChatInfoModal';
-import userPhoto from '../img/user-photo.jpg';
+import { useEffect, useState, useRef } from "react";
+import "../App.scss";
+import { io } from "socket.io-client";
+import LogoutIcon from "@mui/icons-material/Logout";
+import CreateChatModal from "./CreateChatModal";
+import UserInfoModal from "./UserInfoModal";
+import ChatInfoModal from "./ChatInfoModal";
+import userPhoto from "../img/user-photo.jpg";
 
-const socket = io('http://localhost:5000');
+const socket = io("http://localhost:5000");
 
 function MainPage({ currentUser, onLogout }) {
   const [isCreateChatModalOpen, setIsCreateChatModalOpen] = useState(false);
@@ -15,7 +15,7 @@ function MainPage({ currentUser, onLogout }) {
   const [isChatInfoModalOpen, setIsChatInfoModalOpen] = useState(false);
   const [chats, setChats] = useState([]);
   const [user, setUser] = useState(null);
-  const [messageText, setMessageText] = useState('');
+  const [messageText, setMessageText] = useState("");
   const [messages, setMessages] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const messagesEndRef = useRef(null);
@@ -29,14 +29,13 @@ function MainPage({ currentUser, onLogout }) {
           const res = await fetch(`http://localhost:5000/api/chats/${MY_ID}`);
 
           if (!res.ok) {
-            throw new Error('Failed to fetch chats');
+            throw new Error("Failed to fetch chats");
           }
 
           const data = await res.json();
 
           setChats(Array.isArray(data) ? data : []);
         } catch (err) {
-          // eslint-disable-next-line no-console
           console.error(err.message);
         }
       };
@@ -51,7 +50,6 @@ function MainPage({ currentUser, onLogout }) {
         .then((res) => res.json())
         .then((data) => setUser(data))
         .catch((err) => {
-          // eslint-disable-next-line no-console
           console.error(err);
         });
     }
@@ -77,20 +75,20 @@ function MainPage({ currentUser, onLogout }) {
                     ? Number(chat.unread_count || 0) + 1
                     : 0,
               }
-            : chat,
+            : chat
         );
 
         return [...updated].sort(
           (a, b) =>
             new Date(b.last_message_time || b.created_at) -
-            new Date(a.last_message_time || a.created_at),
+            new Date(a.last_message_time || a.created_at)
         );
       });
     };
 
-    socket.on('update_chat_list', handleUpdateChatList);
+    socket.on("update_chat_list", handleUpdateChatList);
 
-    return () => socket.off('update_chat_list', handleUpdateChatList);
+    return () => socket.off("update_chat_list", handleUpdateChatList);
   }, [selectedChat?.id]);
 
   useEffect(() => {
@@ -98,7 +96,7 @@ function MainPage({ currentUser, onLogout }) {
       return undefined;
     }
 
-    socket.emit('join_chat', selectedChat.id);
+    socket.emit("join_chat", selectedChat.id);
 
     const handleReceiveMessage = (newMessage) => {
       if (newMessage.chat_id === selectedChat.id) {
@@ -110,16 +108,16 @@ function MainPage({ currentUser, onLogout }) {
       }
     };
 
-    socket.on('receive_message', handleReceiveMessage);
+    socket.on("receive_message", handleReceiveMessage);
 
     return () => {
-      socket.off('receive_message', handleReceiveMessage);
-      socket.emit('leave_chat', selectedChat.id);
+      socket.off("receive_message", handleReceiveMessage);
+      socket.emit("leave_chat", selectedChat.id);
     };
   }, [selectedChat?.id]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = async () => {
@@ -128,9 +126,9 @@ function MainPage({ currentUser, onLogout }) {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("http://localhost:5000/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: selectedChat.id,
           sender_id: MY_ID,
@@ -139,10 +137,9 @@ function MainPage({ currentUser, onLogout }) {
       });
 
       if (response.ok) {
-        setMessageText('');
+        setMessageText("");
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(err);
     }
   };
@@ -152,17 +149,17 @@ function MainPage({ currentUser, onLogout }) {
 
     try {
       await fetch(`http://localhost:5000/api/messages/read/${chat.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: MY_ID }),
       });
 
       setChats((prev) =>
-        prev.map((c) => (c.id === chat.id ? { ...c, unread_count: 0 } : c)),
+        prev.map((c) => (c.id === chat.id ? { ...c, unread_count: 0 } : c))
       );
 
       const response = await fetch(
-        `http://localhost:5000/api/messages/${chat.id}`,
+        `http://localhost:5000/api/messages/${chat.id}`
       );
 
       if (response.ok) {
@@ -171,7 +168,6 @@ function MainPage({ currentUser, onLogout }) {
         setMessages(data);
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error(err);
     }
   };
@@ -188,11 +184,11 @@ function MainPage({ currentUser, onLogout }) {
 
   const handleChatUpdated = (chatId, newName) => {
     setChats((prev) =>
-      prev.map((c) => (c.id === chatId ? { ...c, name: newName } : c)),
+      prev.map((c) => (c.id === chatId ? { ...c, name: newName } : c))
     );
 
     setSelectedChat((prev) =>
-      prev?.id === chatId ? { ...prev, name: newName } : prev,
+      prev?.id === chatId ? { ...prev, name: newName } : prev
     );
   };
 
@@ -213,6 +209,7 @@ function MainPage({ currentUser, onLogout }) {
       )}
       {isChatInfoModalOpen && (
         <ChatInfoModal
+          key={chats.id}
           onClose={() => setIsChatInfoModalOpen(false)}
           chat={selectedChat}
           onChatDeleted={handleChatDeleted}
@@ -226,7 +223,7 @@ function MainPage({ currentUser, onLogout }) {
           role="button"
           tabIndex="0"
           onClick={() => setSelectedChat(null)}
-          onKeyDown={(e) => e.key === 'Enter' && setSelectedChat(null)}
+          onKeyDown={(e) => e.key === "Enter" && setSelectedChat(null)}
         >
           Chats
         </div>
@@ -237,7 +234,7 @@ function MainPage({ currentUser, onLogout }) {
             className="add-chat"
             onClick={() => setIsCreateChatModalOpen(true)}
             onKeyDown={(e) =>
-              e.key === 'Enter' && setIsCreateChatModalOpen(true)
+              e.key === "Enter" && setIsCreateChatModalOpen(true)
             }
           >
             +
@@ -261,22 +258,22 @@ function MainPage({ currentUser, onLogout }) {
               chats.map((chat) => (
                 <div
                   className={`chat-block-info ${
-                    selectedChat?.id === chat.id ? 'active' : ''
+                    selectedChat?.id === chat.id ? "active" : ""
                   }`}
                   key={chat.id}
                   role="button"
                   tabIndex="0"
                   onClick={() => handleChatClick(chat)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleChatClick(chat)}
+                  onKeyDown={(e) => e.key === "Enter" && handleChatClick(chat)}
                 >
                   <div className="chat-block-left-data">
                     <img className="chat-photo" src={userPhoto} alt="chat" />
                     <div className="text-info">
                       <div className="chat-name">
-                        {chat.name || chat.recipient_name || 'Unnamed Chat'}
+                        {chat.name || chat.recipient_name || "Unnamed Chat"}
                       </div>
                       <div className="chat-message">
-                        {chat.last_message || 'No messages yet'}
+                        {chat.last_message || "No messages yet"}
                       </div>
                     </div>
                   </div>
@@ -284,12 +281,12 @@ function MainPage({ currentUser, onLogout }) {
                     <div className="message-time">
                       {chat.last_message_time || chat.created_at
                         ? new Date(
-                            chat.last_message_time || chat.created_at,
+                            chat.last_message_time || chat.created_at
                           ).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
+                            hour: "2-digit",
+                            minute: "2-digit",
                           })
-                        : ''}
+                        : ""}
                     </div>
                     {parseInt(chat.unread_count, 10) > 0 && (
                       <div className="message-count">{chat.unread_count} </div>
@@ -310,7 +307,7 @@ function MainPage({ currentUser, onLogout }) {
                   type="button"
                   onClick={() => setIsChatInfoModalOpen(true)}
                 >
-                  {' '}
+                  {" "}
                   <img className="chat-photo" src={userPhoto} alt="chat_img" />
                 </button>
                 <button
@@ -318,7 +315,7 @@ function MainPage({ currentUser, onLogout }) {
                   className="header-chat-name"
                   onClick={() => setIsChatInfoModalOpen(true)}
                 >
-                  {selectedChat.name || selectedChat.recipient_name || 'Chat'}
+                  {selectedChat.name || selectedChat.recipient_name || "Chat"}
                 </button>
               </div>
 
@@ -327,7 +324,7 @@ function MainPage({ currentUser, onLogout }) {
                   <div
                     key={msg.id}
                     className={`messages-block-chat-message ${
-                      msg.sender_id === MY_ID ? 'sent' : 'received'
+                      msg.sender_id === MY_ID ? "sent" : "received"
                     }`}
                   >
                     {msg.sender_id !== MY_ID && (
@@ -337,8 +334,8 @@ function MainPage({ currentUser, onLogout }) {
                       <div className="user-message">{msg.content}</div>
                       <div className="message-time">
                         {new Date(msg.created_at).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })}
                       </div>
                     </div>
@@ -354,7 +351,7 @@ function MainPage({ currentUser, onLogout }) {
                   placeholder="Write a message..."
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                 />
                 <button
                   type="button"

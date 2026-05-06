@@ -100,7 +100,7 @@ function AuthPage({ onLoginSuccess }) {
           </button>
         </form>
         <button
-          type="button"
+          type="submit"
           className="link-button"
           onClick={() => setIsRegister(!isRegister)}
         >
